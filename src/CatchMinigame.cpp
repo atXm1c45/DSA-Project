@@ -23,6 +23,16 @@ using namespace std;
 namespace
 {
 
+    void typewriteLine(const string &message)
+    {
+        for (char character : message)
+        {
+            cout.put(character).flush();
+            timeDelay(15);
+        }
+        cout.put('\n').flush();
+    }
+
     // --- Data Structures ---
     struct Inventory
     {
@@ -87,7 +97,8 @@ namespace
         const size_t last = habitat.find_last_not_of(" \t\r\n");
         string normalized = habitat.substr(first, last - first + 1);
         transform(normalized.begin(), normalized.end(), normalized.begin(),
-                  [](unsigned char character) {
+                  [](unsigned char character)
+                  {
                       return static_cast<char>(tolower(character));
                   });
         return normalized;
@@ -119,7 +130,7 @@ namespace
     }
 
     bool chooseExpeditionHabitat(const vector<SpeciesData *> &database,
-                                string &selectedHabitat)
+                                 string &selectedHabitat)
     {
         map<string, string> habitatsByNormalizedName;
         for (const SpeciesData *species : database)
@@ -276,7 +287,8 @@ namespace
                                     int maxChoice, int &choice)
     {
         string line;
-        cout << "\n" << prompt;
+        cout << "\n"
+             << prompt;
         if (!getline(cin, line))
             return ChoiceReadResult::InputClosed;
 
@@ -331,8 +343,8 @@ namespace
 
         if (collected == 0)
         {
-            cout << "\n[FOUND ITEM] You found " << singularName
-                 << ", but your bag is full!\n";
+            typewriteLine("\n[FOUND ITEM] You found " + singularName +
+                          ", but your bag is full!");
             return;
         }
 
@@ -341,17 +353,20 @@ namespace
 
         if (requested == 1)
         {
-            cout << "\n[FOUND ITEM] You found " << singularName
-                 << "! (" << inventoryName << ": " << inventoryCount << ")\n";
+            typewriteLine("\n[FOUND ITEM] You found " + singularName +
+                          "! (" + inventoryName + ": " +
+                          to_string(inventoryCount) + ")");
         }
         else
         {
-            cout << "\n[FOUND ITEM] You found a handful of " << pluralName;
+            string message = "\n[FOUND ITEM] You found a handful of " + pluralName;
             if (collected < requested)
-                cout << ", but only " << collected << " fit in your bag";
+                message += ", but only " + to_string(collected) + " fit in your bag";
             else
-                cout << " (" << collected << ")";
-            cout << "! (" << inventoryName << ": " << inventoryCount << ")\n";
+                message += " (" + to_string(collected) + ")";
+            message += "! (" + inventoryName + ": " +
+                       to_string(inventoryCount) + ")";
+            typewriteLine(message);
         }
     }
 
@@ -362,7 +377,7 @@ namespace
 
         if (roll < 65)
         {
-            cout << "\n[EXPLORE] You searched the area but found nothing.\n";
+            typewriteLine("\n[EXPLORE] You searched the area but found nothing.");
             return ItemDiscovery::Nothing;
         }
         else if (roll < 80)
@@ -460,15 +475,15 @@ namespace
         if (partyList->getCount() < MAX_PARTY_SIZE)
         {
             partyList->insertNode(pokemon);
-            cout << pokemon->nickname << " joined your party!\n";
+            typewriteLine(pokemon->nickname + " joined your party!");
             return;
         }
 
         int boxNumber = pcSystem->storePokemonInAvailableBox(pokemon);
         if (boxNumber != 0)
         {
-            cout << "Your party is full. " << pokemon->nickname
-                 << " was sent to Box " << boxNumber << ".\n";
+            typewriteLine("Your party is full. " + pokemon->nickname +
+                          " was sent to Box " + to_string(boxNumber) + ".");
             return;
         }
 
@@ -558,13 +573,12 @@ namespace
                 turnCompleted = true;
 
                 double finalCatch = calculateCaptureChance(*pokemon, captureMod);
-                cout << "\nYou threw a Safari Ball...\n";
+                typewriteLine("\nYou threw a Safari Ball...");
                 timeDelay(1000);
 
                 if (rollPercentage(finalCatch))
                 {
-                    ConsoleUtils::printTypewriterLine(
-                        "\nGOTCHA! " + pokemon->name + " was caught!");
+                    typewriteLine("\nGOTCHA! " + pokemon->name + " was caught!");
                     stats.caught++;
                     addCaughtPokemon(pokemon, modifiers, isShiny);
 
@@ -573,8 +587,7 @@ namespace
                 }
                 else
                 {
-                    ConsoleUtils::printTypewriterLine(
-                        "\nOh no! The Pokémon broke free!");
+                    typewriteLine("\nOh no! The Pokémon broke free!");
                 }
             }
             else if (action == 2)
@@ -588,8 +601,8 @@ namespace
                 captureMod = 20.0;
                 fleeMod = 15.0;
                 turnCompleted = true;
-                ConsoleUtils::printTypewriterLine(
-                    "\nYou threw a Rock! " + pokemon->name + " looks angry!");
+                typewriteLine("\nYou threw a Rock! " + pokemon->name +
+                              " looks angry!");
             }
             else if (action == 3)
             { // BAIT
@@ -602,13 +615,12 @@ namespace
                 captureMod = -10.0;
                 fleeMod = -15.0;
                 turnCompleted = true;
-                ConsoleUtils::printTypewriterLine(
-                    "\nYou threw Bait! " + pokemon->name + " is eating...");
+                typewriteLine("\nYou threw Bait! " + pokemon->name +
+                              " is eating...");
             }
             else if (action == 4)
             { // RUN
-                ConsoleUtils::printTypewriterLine(
-                    "\nYou ran away from the encounter.");
+                typewriteLine("\nYou ran away from the encounter.");
                 active = false;
                 break;
             }
@@ -618,22 +630,21 @@ namespace
                 timeDelay(1000);
                 if (rollPercentage(finalFlee))
                 {
-                    ConsoleUtils::printTypewriterLine(
-                        "\nThe wild " + pokemon->name + " fled!");
+                    typewriteLine("\nThe wild " + pokemon->name + " fled!");
                     stats.pokemonFled++;
                     active = false;
                 }
                 else
                 {
-                    ConsoleUtils::printTypewriterLine(
-                        "\nThe wild " + pokemon->name + " is watching carefully...");
+                    typewriteLine("\nThe wild " + pokemon->name +
+                                  " is watching carefully...");
                 }
             }
 
             // Check if out of balls mid-encounter
             if (playerInv.balls <= 0 && active)
             {
-                cout << "\n[!] You ran out of Safari Balls! The encounter ends.\n";
+                typewriteLine("\n[!] You ran out of Safari Balls! The encounter ends.");
                 active = false;
             }
             else if (active && turnCompleted)
@@ -667,8 +678,8 @@ namespace
             {
                 stats.encountered++;
                 showWildPokemon(wild, modifiers, isShiny, true);
-                cout << "\nYou have no Safari Balls to catch it.\n";
-                cout << "The expedition ends because you cannot catch it without Safari Balls.\n";
+                typewriteLine("\nYou have no Safari Balls to catch it.");
+                typewriteLine("The expedition ends because you cannot catch it without Safari Balls.");
             }
             else
             {
@@ -682,19 +693,19 @@ namespace
             {
                 if (result == ItemDiscovery::SafariBall && playerInv.balls > 0)
                 {
-                    cout << "\nYou successfully added a Safari Ball. The expedition continues.\n";
+                    typewriteLine("\nYou successfully added a Safari Ball. The expedition continues.");
                 }
                 else if (result == ItemDiscovery::Rock)
                 {
-                    cout << "\nYou found a Rock, but no Safari Balls. The expedition ends.\n";
+                    typewriteLine("\nYou found a Rock, but no Safari Balls. The expedition ends.");
                 }
                 else if (result == ItemDiscovery::Bait)
                 {
-                    cout << "\nYou found Bait, but no Safari Balls. The expedition ends.\n";
+                    typewriteLine("\nYou found Bait, but no Safari Balls. The expedition ends.");
                 }
                 else
                 {
-                    cout << "\nYou found nothing. The expedition ends because no Safari Balls remain.\n";
+                    typewriteLine("\nYou found nothing. The expedition ends because no Safari Balls remain.");
                 }
             }
         }
@@ -709,15 +720,15 @@ namespace
 
         if (lastChanceUsed)
         {
-            cout << "\n[!] No Safari Balls remain. The expedition ends.\n";
+            typewriteLine("\n[!] No Safari Balls remain. The expedition ends.");
             expeditionOver = true;
             endingBonus = 0;
             return;
         }
 
         lastChanceUsed = true;
-        cout << "\n[!] Last Chance: one final exploration attempt!\n";
-        cout << "\nYou continue searching the area...\n";
+        typewriteLine("\n[!] Last Chance: one final exploration attempt!");
+        typewriteLine("\nYou continue searching the area...");
         timeDelay(1000);
         performExploration(true);
 
@@ -856,7 +867,8 @@ namespace
                 else
                     endingBonus = 100;
 
-                cout << "You decided to wrap up the expedition.\n";
+                typewriteLine("You decided to wrap up the expedition.");
+                waitForContinue();
                 expeditionOver = true;
             }
         }

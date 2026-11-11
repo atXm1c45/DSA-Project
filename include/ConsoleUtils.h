@@ -31,9 +31,15 @@ inline void printMenuSeparator()
 
 inline void waitForContinue()
 {
-    std::cout << "\nPress Enter to continue..." << std::flush;
-    std::string input;
-    std::getline(std::cin, input);
+    while (true)
+    {
+        std::cout << "\nPress Enter to continue..." << std::flush;
+        std::string input;
+        if (!std::getline(std::cin, input) || input.empty())
+            return;
+
+        std::cout << "[INPUT ERROR] Please press Enter without entering any characters.\n";
+    }
 }
 
 inline void reportMessageAndWait(const std::string &label,

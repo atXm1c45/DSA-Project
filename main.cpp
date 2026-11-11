@@ -59,7 +59,7 @@ void displayMainMenu(const DoublyLinkedList &party, const PCSystem &pc,
 {
     clearScreen();
     cout << "\n╔══════════════════════════════════════╗" << endl;
-    cout << "║          POKÉMON ADVENTURE           ║" << endl;
+    cout << "║               PokéCLI                ║" << endl;
     cout << "╚══════════════════════════════════════╝" << endl;
     cout << " Party: " << party.getCount() << "/" << MAX_PARTY_SIZE
          << "       Active Box: " << pc.getCurrentBoxNumber() << "/"

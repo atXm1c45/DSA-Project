@@ -238,7 +238,7 @@ void handlePartySubMenu(DoublyLinkedList &party, PCSystem &pc, int slot)
         }
         else if (action == 4)
         {
-            browsePokemonSummaries(party, slot);
+            slot = browsePokemonSummaries(party, slot);
             continue;
         }
         else if (action == 5)
@@ -342,7 +342,7 @@ void managePartyOutsideBox(DoublyLinkedList &party, PCSystem &)
             }
             else if (action == 3)
             {
-                browsePokemonSummaries(party, slot);
+                slot = browsePokemonSummaries(party, slot);
                 continue;
             }
             else
@@ -452,7 +452,7 @@ void handleBoxSubMenu(PCSystem &pc, DoublyLinkedList &party, int slot)
         }
         else if (action == 5)
         {
-            browsePokemonSummaries(boxList, slot);
+            slot = browsePokemonSummaries(boxList, slot);
             continue;
         }
         else if (action == 6)

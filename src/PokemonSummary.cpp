@@ -319,10 +319,10 @@ void printPokemonSummary(const PokemonNode *pokemon, bool playCry, bool showSpri
     printSummary(pokemon, pokemon->species, playCry, showSprite);
 }
 
-void browsePokemonSummaries(const DoublyLinkedList &list, int position)
+int browsePokemonSummaries(const DoublyLinkedList &list, int position)
 {
     if (position < 1 || position > list.getCount())
-        return;
+        return position;
 
     while (true)
     {
@@ -333,7 +333,7 @@ void browsePokemonSummaries(const DoublyLinkedList &list, int position)
         if (pokemon == nullptr)
         {
             reportError("Could not find that Pokémon.");
-            return;
+            return position;
         }
 
         printSummary(pokemon, pokemon->species, true, true, false);
@@ -348,7 +348,7 @@ void browsePokemonSummaries(const DoublyLinkedList &list, int position)
                 continue;
             }
             if (navigation == 0)
-                return;
+                return position;
             if (navigation == NAV_NEXT && position < list.getCount())
             {
                 ++position;
