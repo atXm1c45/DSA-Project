@@ -53,4 +53,10 @@ inline void reportInvalidInput(const std::string &message)
     reportMessageAndWait("[INPUT ERROR]", message);
 }
 
+namespace ConsoleUtils
+{
+void printTypewriter(const std::string &text);
+void printTypewriterLine(const std::string &text);
+}
+
 #endif

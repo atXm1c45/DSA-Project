@@ -24,7 +24,8 @@ bool readSaveFileInfo(const std::string &filename,
                       SaveFileInfo &info, std::string &error);
 bool saveGame(const std::string &filename, PCSystem &pc, DoublyLinkedList &party,
               const std::set<int> &registeredSpecies,
-              const std::set<int> &encounteredSpecies);
+              const std::set<int> &encounteredSpecies,
+              bool skipOverwriteConfirmation = false);
 bool loadGame(const std::string &filename, PCSystem &pc, DoublyLinkedList &party,
               const std::vector<SpeciesData *> &pokedex, int maxPartySize,
               std::set<int> &registeredSpecies,

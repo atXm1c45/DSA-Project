@@ -60,7 +60,7 @@ void handleSaveMenu(PCSystem &pc, DoublyLinkedList &party,
         timeDelay(500);
         if (saveGame(SAVE_FILE, pc, party, registeredSpecies, encounteredSpecies))
         {
-            cout << "[SUCCESS] Saved to " << SAVE_FILE << "." << endl;
+            ConsoleUtils::printTypewriterLine("[SUCCESS] Saved to " + SAVE_FILE + ".");
             waitForContinue();
         }
         else
@@ -96,7 +96,7 @@ void handleSaveMenu(PCSystem &pc, DoublyLinkedList &party,
         if (loadGame(SAVE_FILE, pc, party, pokedex, MAX_PARTY_SIZE,
                      registeredSpecies, encounteredSpecies))
         {
-            cout << "[SUCCESS] Loaded " << SAVE_FILE << "." << endl;
+            ConsoleUtils::printTypewriterLine("[SUCCESS] Loaded " + SAVE_FILE + ".");
             waitForContinue();
         }
         else

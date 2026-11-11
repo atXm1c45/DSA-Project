@@ -498,12 +498,15 @@ namespace
         renderAutoCenteredSprite(spritePath);
 
         cout << "\n------------------------------------\n";
-        cout << "  A wild ";
+        string announcement = "  A wild ";
         if (isShiny)
-            cout << "SHINY ";
-        cout << pokemon->name << " appeared!\n";
+            announcement += "SHINY ";
+        announcement += pokemon->name + " appeared!";
+        ConsoleUtils::printTypewriterLine(announcement);
         cout << "  Level: " << modifiers.level << " | Nature: " << modifiers.nature
-             << " | Ability: " << (modifiers.ability.empty() ? "None" : formatAbilities(modifiers.ability)) << "\n";
+             << " | Ability: "
+             << (modifiers.ability.empty() ? "None" : formatAbilities(modifiers.ability))
+             << "\n";
         cout << "------------------------------------\n";
         cout.flush();
         if (playCry)
@@ -560,7 +563,8 @@ namespace
 
                 if (rollPercentage(finalCatch))
                 {
-                    cout << "\nGOTCHA! " << pokemon->name << " was caught!\n";
+                    ConsoleUtils::printTypewriterLine(
+                        "\nGOTCHA! " + pokemon->name + " was caught!");
                     stats.caught++;
                     addCaughtPokemon(pokemon, modifiers, isShiny);
 
@@ -569,7 +573,8 @@ namespace
                 }
                 else
                 {
-                    cout << "\nOh no! The Pokémon broke free!\n";
+                    ConsoleUtils::printTypewriterLine(
+                        "\nOh no! The Pokémon broke free!");
                 }
             }
             else if (action == 2)
@@ -583,7 +588,8 @@ namespace
                 captureMod = 20.0;
                 fleeMod = 15.0;
                 turnCompleted = true;
-                cout << "\nYou threw a Rock! " << pokemon->name << " looks angry!\n";
+                ConsoleUtils::printTypewriterLine(
+                    "\nYou threw a Rock! " + pokemon->name + " looks angry!");
             }
             else if (action == 3)
             { // BAIT
@@ -596,11 +602,13 @@ namespace
                 captureMod = -10.0;
                 fleeMod = -15.0;
                 turnCompleted = true;
-                cout << "\nYou threw Bait! " << pokemon->name << " is eating...\n";
+                ConsoleUtils::printTypewriterLine(
+                    "\nYou threw Bait! " + pokemon->name + " is eating...");
             }
             else if (action == 4)
             { // RUN
-                cout << "\nYou ran away from the encounter.\n";
+                ConsoleUtils::printTypewriterLine(
+                    "\nYou ran away from the encounter.");
                 active = false;
                 break;
             }
@@ -610,13 +618,15 @@ namespace
                 timeDelay(1000);
                 if (rollPercentage(finalFlee))
                 {
-                    cout << "\nThe wild " << pokemon->name << " fled!\n";
+                    ConsoleUtils::printTypewriterLine(
+                        "\nThe wild " + pokemon->name + " fled!");
                     stats.pokemonFled++;
                     active = false;
                 }
                 else
                 {
-                    cout << "\nThe wild " << pokemon->name << " is watching carefully...\n";
+                    ConsoleUtils::printTypewriterLine(
+                        "\nThe wild " + pokemon->name + " is watching carefully...");
                 }
             }
 

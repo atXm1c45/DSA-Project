@@ -1,6 +1,13 @@
 #ifndef GAME_SETTINGS_H
 #define GAME_SETTINGS_H
 
+enum class TextSpeed
+{
+    Slow,
+    Medium,
+    Fast
+};
+
 struct GameSettings
 {
     bool spritesEnabled = true;
@@ -9,6 +16,7 @@ struct GameSettings
     bool developerMode = false;
     bool confirmRelease = true;
     bool confirmOverwrite = true;
+    TextSpeed textSpeed = TextSpeed::Medium;
     int lastPokedexEntry = 1;
 };
 

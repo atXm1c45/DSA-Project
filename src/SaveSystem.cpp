@@ -16,7 +16,7 @@ using namespace std;
 
 namespace
 {
-const int SAVE_VERSION = 8;
+const int SAVE_VERSION = 9;
 
 struct SavedPokemon
 {
@@ -241,9 +241,11 @@ bool readSaveFileInfo(const string &filename,
 }
 
 bool saveGame(const string &filename, PCSystem &pc, DoublyLinkedList &party,
-              const set<int> &registeredSpecies, const set<int> &encounteredSpecies)
+              const set<int> &registeredSpecies, const set<int> &encounteredSpecies,
+              bool skipOverwriteConfirmation)
 {
-    if (getGameSettings().confirmOverwrite && fileExists(filename) &&
+    if (!skipOverwriteConfirmation && getGameSettings().confirmOverwrite &&
+        fileExists(filename) &&
         !askYesNo("Overwrite the existing save file? A backup will be kept.", []() {
             clearScreen();
             printMenuHeader("OVERWRITE SAVE");
@@ -279,7 +281,8 @@ bool saveGame(const string &filename, PCSystem &pc, DoublyLinkedList &party,
         out << "SETTINGS," << settings.spritesEnabled << ","
             << settings.soundEnabled << "," << settings.typeTagsEnabled << ","
             << settings.developerMode << "," << settings.confirmRelease << ","
-            << settings.confirmOverwrite << "\n";
+            << settings.confirmOverwrite << ","
+            << static_cast<int>(settings.textSpeed) << "\n";
         out << "POKEDEX_CURSOR," << settings.lastPokedexEntry << "\n";
         out << "SAVED_AT," << quote(savedAt) << "\n";
 
@@ -412,7 +415,8 @@ bool loadGame(const string &filename, PCSystem &pc, DoublyLinkedList &party,
         {
             int sprites = 0, sound = 0, typeTags = 0, developer = 0;
             int confirmRelease = 1, confirmOverwrite = 1;
-            const size_t expectedFields = version >= 8 ? 7 : 5;
+            const size_t expectedFields = version >= 9 ? 8 : version >= 8 ? 7 : 5;
+            int textSpeed = static_cast<int>(TextSpeed::Medium);
             if (version < 5 || sawSettings || t.size() != expectedFields ||
                 !toInt(t[1], sprites) || !toInt(t[2], sound) ||
                 !toInt(t[3], typeTags) || !toInt(t[4], developer) ||
@@ -424,7 +428,9 @@ bool loadGame(const string &filename, PCSystem &pc, DoublyLinkedList &party,
                  (!toInt(t[5], confirmRelease) ||
                   !toInt(t[6], confirmOverwrite) ||
                   (confirmRelease != 0 && confirmRelease != 1) ||
-                  (confirmOverwrite != 0 && confirmOverwrite != 1))))
+                  (confirmOverwrite != 0 && confirmOverwrite != 1))) ||
+                (version >= 9 &&
+                 (!toInt(t[7], textSpeed) || textSpeed < 0 || textSpeed > 2)))
                 return fail("bad SETTINGS record");
             loadedSettings.spritesEnabled = sprites != 0;
             loadedSettings.soundEnabled = sound != 0;
@@ -432,6 +438,7 @@ bool loadGame(const string &filename, PCSystem &pc, DoublyLinkedList &party,
             loadedSettings.developerMode = developer != 0;
             loadedSettings.confirmRelease = confirmRelease != 0;
             loadedSettings.confirmOverwrite = confirmOverwrite != 0;
+            loadedSettings.textSpeed = static_cast<TextSpeed>(textSpeed);
             sawSettings = true;
         }
         else if (tag == "SAVED_AT")

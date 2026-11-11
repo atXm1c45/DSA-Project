@@ -1,7 +1,10 @@
 #include "../include/DeveloperTools.h"
 #include "../include/ConsoleUtils.h"
 #include "../include/CatchMinigame.h"
+#include "../include/GameSettings.h"
 #include "../include/MenuUtils.h"
+#include "../include/SaveMenu.h"
+#include "../include/SaveSystem.h"
 #include <algorithm>
 #include <cctype>
 #include <iostream>
@@ -18,6 +21,47 @@ enum class PokedexStatus
     Seen,
     Caught
 };
+
+struct PokemonSnapshot
+{
+    const SpeciesData *species;
+    string nickname;
+    string gender;
+    int level;
+    string ability;
+    string nature;
+    bool isShiny;
+    string dateCaught;
+};
+
+void capturePokemon(const DoublyLinkedList &list,
+                    vector<PokemonSnapshot> &snapshot)
+{
+    for (const PokemonNode *pokemon = list.getHead(); pokemon != nullptr;
+         pokemon = pokemon->next)
+    {
+        snapshot.push_back({pokemon->species, pokemon->nickname, pokemon->gender,
+                            pokemon->level, pokemon->ability, pokemon->nature,
+                            pokemon->isShiny, pokemon->dateCaught});
+    }
+}
+
+void clearPokemon(DoublyLinkedList &list)
+{
+    while (!list.isEmpty())
+        list.releaseByPosition(1);
+}
+
+void restorePokemon(DoublyLinkedList &list,
+                    const vector<PokemonSnapshot> &snapshot)
+{
+    for (const PokemonSnapshot &pokemon : snapshot)
+    {
+        list.append(pokemon.species, pokemon.nickname, pokemon.gender,
+                    pokemon.level, pokemon.ability, pokemon.nature,
+                    pokemon.isShiny, pokemon.dateCaught);
+    }
+}
 
 string trim(string value)
 {
@@ -43,6 +87,7 @@ void displayDeveloperMenu()
     cout << "2. Fill PC with all loaded Pokémon" << endl;
     cout << "3. Empty all PC boxes" << endl;
     cout << "4. Spawn Pokémon by species name" << endl;
+    cout << "5. Factory reset game" << endl;
     printMenuSeparator();
     cout << "0. Back" << endl;
 }
@@ -224,6 +269,77 @@ void emptyPC(PCSystem &pc)
     waitForContinue();
 }
 
+bool factoryReset(const vector<SpeciesData *> &pokedex, PCSystem &pc,
+                  DoublyLinkedList &party, set<int> &registeredSpecies,
+                  set<int> &encounteredSpecies)
+{
+    const bool hadSave = saveFileExists(SAVE_FILE);
+    if (!askYesNo(
+            "Reset the game to a fresh start? Party, PC, Pokédex progress, box "
+            "names, and settings will reset. " +
+                string(hadSave ? "The current save will be backed up."
+                               : "A fresh save will be created."),
+            displayDeveloperMenu))
+        return false;
+
+    vector<PokemonSnapshot> partySnapshot;
+    capturePokemon(party, partySnapshot);
+    vector<vector<PokemonSnapshot>> boxSnapshots(MAX_BOXES + 1);
+    vector<string> boxNames(MAX_BOXES + 1);
+    for (int boxNumber = 1; boxNumber <= MAX_BOXES; ++boxNumber)
+    {
+        capturePokemon(pc.getList(boxNumber), boxSnapshots[boxNumber]);
+        boxNames[boxNumber] = pc.getBoxName(boxNumber);
+    }
+    const int activeBox = pc.getCurrentBoxNumber();
+    const set<int> registeredSnapshot = registeredSpecies;
+    const set<int> encounteredSnapshot = encounteredSpecies;
+    const GameSettings settingsSnapshot = getGameSettings();
+
+    clearPokemon(party);
+    clearPC(pc);
+    for (int boxNumber = 1; boxNumber <= MAX_BOXES; ++boxNumber)
+        pc.setBoxName(boxNumber, "Box " + to_string(boxNumber));
+    pc.setCurrentBox(1);
+    registeredSpecies.clear();
+    encounteredSpecies.clear();
+    getGameSettings() = GameSettings{};
+
+    const SpeciesData *starter = getSpeciesByPokedexNumber(pokedex, 25);
+    if (starter != nullptr)
+    {
+        party.append(starter, "Pikachu", "Male", 5, "Static", "Hardy",
+                     false, "");
+        registeredSpecies.insert(starter->internalID);
+        encounteredSpecies.insert(starter->internalID);
+    }
+
+    if (!saveGame(SAVE_FILE, pc, party, registeredSpecies,
+                  encounteredSpecies, true))
+    {
+        clearPokemon(party);
+        clearPC(pc);
+        restorePokemon(party, partySnapshot);
+        for (int boxNumber = 1; boxNumber <= MAX_BOXES; ++boxNumber)
+        {
+            restorePokemon(pc.getList(boxNumber), boxSnapshots[boxNumber]);
+            pc.setBoxName(boxNumber, boxNames[boxNumber]);
+        }
+        pc.setCurrentBox(activeBox);
+        registeredSpecies = registeredSnapshot;
+        encounteredSpecies = encounteredSnapshot;
+        getGameSettings() = settingsSnapshot;
+        return false;
+    }
+
+    cout << "[SUCCESS] Factory reset complete. "
+         << (hadSave ? "Previous save backed up to " + SAVE_FILE + ".bak."
+                     : "A fresh save was created.")
+         << endl;
+    waitForContinue();
+    return true;
+}
+
 void displaySpawnDestinationMenu()
 {
     clearScreen();
@@ -343,7 +459,7 @@ void handleDeveloperTools(const vector<SpeciesData *> &pokedex,
     while (true)
     {
         displayDeveloperMenu();
-        const int choice = readMenuChoice("\nChoice: ", 4, true,
+        const int choice = readMenuChoice("\nChoice: ", 5, true,
                                           displayDeveloperMenu);
         if (choice == 0)
             return;
@@ -353,7 +469,10 @@ void handleDeveloperTools(const vector<SpeciesData *> &pokedex,
             fillPCWithAllPokemon(pokedex, pc, registeredSpecies, encounteredSpecies);
         else if (choice == 3)
             emptyPC(pc);
-        else
+        else if (choice == 4)
             spawnPokemon(pokedex, pc, party, registeredSpecies, encounteredSpecies);
+        else if (factoryReset(pokedex, pc, party, registeredSpecies,
+                              encounteredSpecies))
+            return;
     }
 }

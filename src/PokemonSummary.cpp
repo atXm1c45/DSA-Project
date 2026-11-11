@@ -301,7 +301,7 @@ void printSummary(const PokemonNode *pokemon, const SpeciesData *species,
 
     // Pokédex Flavor Text
     cout << "  [DESCRIPTION]\n";
-    cout << "   \"" << species->flavorText << "\"\n";
+    ConsoleUtils::printTypewriterLine("   \"" + species->flavorText + "\"");
     cout << "====================================================================\n\n";
     if (waitForInput)
         waitForContinue();

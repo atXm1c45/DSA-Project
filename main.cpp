@@ -97,7 +97,11 @@ void displaySettingsMenu(const GameSettings &settings)
          << (settings.confirmRelease ? "On" : "Off") << endl;
     cout << "6. Confirm before overwriting save/session: "
          << (settings.confirmOverwrite ? "On" : "Off") << endl;
-    cout << "7. Reset settings to defaults" << endl;
+    const char *textSpeed = settings.textSpeed == TextSpeed::Slow ? "Slow"
+                            : settings.textSpeed == TextSpeed::Fast ? "Fast"
+                                                                    : "Medium";
+    cout << "7. Text speed: " << textSpeed << endl;
+    cout << "8. Reset settings to defaults" << endl;
     cout << "Settings are stored in the save file when you save the game." << endl;
     cout << "0. Back" << endl;
 }
@@ -193,7 +197,7 @@ int main()
                     const GameSettings &settings = getGameSettings();
                     displaySettingsMenu(settings);
                     const int setting = readMenuChoice(
-                        "\nSelect setting: ", 7, true,
+                        "\nSelect setting: ", 8, true,
                         [&settings]() { displaySettingsMenu(settings); });
                     GameSettings &mutableSettings = getGameSettings();
                     if (setting == 0)
@@ -224,7 +228,16 @@ int main()
                     {
                         mutableSettings.confirmOverwrite = !mutableSettings.confirmOverwrite;
                     }
-                    else if (setting == 7 &&
+                    else if (setting == 7)
+                    {
+                        mutableSettings.textSpeed =
+                            mutableSettings.textSpeed == TextSpeed::Slow
+                                ? TextSpeed::Medium
+                                : mutableSettings.textSpeed == TextSpeed::Medium
+                                      ? TextSpeed::Fast
+                                      : TextSpeed::Slow;
+                    }
+                    else if (setting == 8 &&
                              askYesNo("Reset all settings to defaults?",
                                       []() { displaySettingsMenu(getGameSettings()); }))
                     {
@@ -236,6 +249,9 @@ int main()
             {
                 handleDeveloperTools(pokedex, pc, party,
                                      registeredSpecies, encounteredSpecies);
+                hasCurrentSaveInfo = saveFileExists(SAVE_FILE) &&
+                                     readSaveFileInfo(SAVE_FILE, pokedex,
+                                                      currentSaveInfo, saveInfoError);
             }
         }
 
@@ -244,7 +260,8 @@ int main()
             }))
         {
             if (saveGame(SAVE_FILE, pc, party, registeredSpecies, encounteredSpecies))
-                cout << "[SUCCESS] Saved to " << SAVE_FILE << "." << endl;
+                ConsoleUtils::printTypewriterLine(
+                    "[SUCCESS] Saved to " + SAVE_FILE + ".");
         }
     }
 
