@@ -11,7 +11,6 @@
 #include <string>
 #include <algorithm>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "../include/stb_image.h"
 
 #ifdef _WIN32

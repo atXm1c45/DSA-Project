@@ -9,6 +9,7 @@
 #include "include/GameSettings.h"
 #include "include/SaveMenu.h"
 #include "include/SaveSystem.h"
+#include "include/TitleScreen.h"
 #include <iostream>
 #include <set>
 #include <string>
@@ -125,6 +126,17 @@ int main()
     {
         reportError("Failed to load Pokedex database.");
         return 1;
+    }
+
+    displayTitleScreen();
+    const int titleChoice = readMenuChoice("\nSelect option: ", 1, true,
+                                           displayTitleScreen);
+    if (titleChoice == 0)
+    {
+        for (SpeciesData *species : pokedex)
+            delete species;
+        clearScreen();
+        return 0;
     }
 
     SaveFileInfo currentSaveInfo;
